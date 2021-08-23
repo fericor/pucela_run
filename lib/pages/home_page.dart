@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:localstorage/localstorage.dart';
+import 'package:fullscreen/fullscreen.dart';
 import 'package:pucela_run/pages/map_page.dart';
-import 'package:pucela_run/pages/test.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pucela_run/pages/splash_page.dart';
 
 import 'mapby_page.dart';
 
@@ -13,55 +14,40 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   // Variables
-  String imgUser =
-      "https://icons-for-free.com/iconfiles/png/512/avatar+human+male+man+men+people+person+profile+user+users-1320196163635839021.png";
+  final LocalStorage storage = new LocalStorage('pucela_app');
 
-  Widget _panelMainHome() {
-    return Positioned(
-      bottom: 100,
-      left: 20,
-      right: 20,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          IconButton(onPressed: () {}, icon: Icon(Icons.settings)),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => MapPage()),
-              );
-            },
-            child: Container(
-              width: 100,
-              height: 100,
-              child: Center(
-                  child: Text(
-                "INICIAR",
-                style: TextStyle(
-                    fontSize: 20.0,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold),
-              )),
-              decoration:
-                  BoxDecoration(shape: BoxShape.circle, color: Colors.purple),
-            ),
-          ),
-          IconButton(onPressed: () {}, icon: Icon(Icons.music_note)),
-        ],
-      ),
-    );
-  }
+  // VARIABLES GLOBALES
+  String _displayname = "PUCELA RUN";
+  String _displayemail = "Carreras";
+  String _displaydistancia = "0K";
+  String _displaydia = "Junio 21, 2021";
+  String _displaymarcacarrera = "0.00";
+  String _displaytipocarrera = "Carrera Virtual";
+  String _displayiduser = "0";
+  String _displayavatar = "assets/logo_mini.png";
+  String _displayubicacion = "Valladolid";
 
   @override
   void initState() {
+    _getInit();
     // TODO: implement initState
     super.initState();
   }
 
+  void _getInit() {
+    _displayname = storage.getItem('LS_USER_DISPLAY_NAME');
+    _displayemail = storage.getItem('LS_USER_MAIL');
+    _displaydistancia = storage.getItem('LS_DISTANCIA');
+    _displaydia = storage.getItem('LS_DIA');
+    _displaymarcacarrera = storage.getItem('LS_MARCA_CARRERA');
+    _displaytipocarrera = storage.getItem('LS_TIPO_CARRERA');
+    _displayiduser = storage.getItem('LS_USER_ID');
+    _displayavatar = storage.getItem('LS_AVATAR');
+  }
+
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+    FullScreen.enterFullScreen(FullScreenMode.EMERSIVE_STICKY);
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: Padding(
@@ -71,7 +57,7 @@ class _HomePageState extends State<HomePage> {
           width: 120.0,
           child: FittedBox(
             child: FloatingActionButton(
-                backgroundColor: Colors.purple,
+                backgroundColor: Colors.black87,
                 child: const Icon(Icons.play_arrow_outlined, size: 50.0,),
                 onPressed: () {
               Navigator.push(
@@ -85,16 +71,24 @@ class _HomePageState extends State<HomePage> {
       body: Stack(
         children: [
           Positioned(
-            top: 400.0,
+            top: 0.0,
             bottom: 0.0,
             left: 0.0,
             right: 0.0,
             child: Container(
               decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/logoPucelaRun.png'),
-                  fit: BoxFit.fitHeight,
-                ),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.purple,
+                      Colors.purpleAccent,
+                    ],
+                  ),
+                /*image: DecorationImage(
+                  image: AssetImage('assets/bg_logo.png'),
+                  fit: BoxFit.cover,
+                ),*/
               ),
             ),
           ),
@@ -106,8 +100,9 @@ class _HomePageState extends State<HomePage> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 60.0),
+                SizedBox(height: 20.0),
                 _headerText(),
+                SizedBox(height: 20.0),
                 Container(
                   height: 220.0,
                   child: ListView(
@@ -126,8 +121,6 @@ class _HomePageState extends State<HomePage> {
           _panelIfoUser(),
         ],
       ),
-
-      // _panelMainHome(),
     );
   }
 
@@ -138,43 +131,85 @@ class _HomePageState extends State<HomePage> {
         color: Colors.black54,
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.only(left: 20.0, top: 5.0, bottom: 5.0),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Image.asset(
-              'assets/logo_mini.png',
-              width: 60.0,
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.purple,
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.only(top: 5.0, bottom: 10.0),
+                child: Image.asset(
+                  'assets/logo_mini.png',
+                  width: 60.0,
+                  color: Colors.white,
+                ),
+              ),
             ),
             SizedBox(
               width: 10.0,
             ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "PUCELA RUN",
-                  style: GoogleFonts.oswald(
-                    textStyle: TextStyle(
-                        color: Colors.white,
-                        fontSize: 25.0,
-                        letterSpacing: 0.5),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _displayname,
+                    style: GoogleFonts.oswald(
+                      textStyle: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20.0,
+                          letterSpacing: 0.5),
+                    ),
                   ),
-                ),
-                Text(
-                  "Carreras",
-                  style: GoogleFonts.oswald(
-                    textStyle: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20.0,
-                        letterSpacing: 0.5),
+                  Text(
+                    _displayemail,
+                    style: GoogleFonts.oswald(
+                      textStyle: TextStyle(
+                          color: Colors.white,
+                          fontSize: 13.0,
+                          letterSpacing: 0.5),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
+            _simpleMenuPopup(),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _simpleMenuPopup() {
+    return PopupMenuButton(
+      icon: Icon(Icons.menu, size: 30.0, color: Colors.white,),
+      itemBuilder: (context) {
+        return [
+          PopupMenuItem(
+            value: 'mapById',
+            child: Text('Test'),
+          ),
+          PopupMenuItem(
+            value: 'Salir',
+            child: Text('Salir'),
+          )
+        ];
+      },
+      onSelected: (String value){
+        if(value == "mapById"){
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => mapByPage()),
+          );
+        }else{
+          _Salir();
+        }
+      },
     );
   }
 
@@ -229,23 +264,60 @@ class _HomePageState extends State<HomePage> {
 
   Widget _panelIfoUser() {
     return Positioned(
-      top: 450.0,
+      top: 400.0,
       right: 0.0,
-      left: 100.0,
+      left: 20.0,
       child: Container(
         width: MediaQuery.of(context).size.width - 100.0,
         decoration: BoxDecoration(
           color: Colors.black87,
           borderRadius: BorderRadius.only(
               topLeft: Radius.circular(15.0),
-              bottomLeft: Radius.circular(15.0)),
+              bottomLeft: Radius.circular(15.0),
+          ),
         ),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.purple,
+                            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 10.0, right: 10.0),
+                            child: Text(_displaydistancia != "" ? _displaydistancia : "NS", style: GoogleFonts.oswald(
+                              textStyle: TextStyle(
+                                color: Colors.white, fontSize: 40.0,),
+                            ),),
+                          ),
+                        ),
+                      ),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Pucela Run",style: GoogleFonts.oswald(
+                            textStyle: TextStyle(
+                                color: Colors.white, fontSize: 20.0, letterSpacing: 0.5),
+                          ),),
+                          Text(_displaytipocarrera,style: GoogleFonts.oswald(
+                            textStyle: TextStyle(
+                                color: Colors.white, fontSize: 15.0, letterSpacing: 0.5),
+                          ),),
+                        ],
+                      ),
+                    ],
+                  ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Container(
@@ -255,26 +327,21 @@ class _HomePageState extends State<HomePage> {
                       ),
                       child: Padding(
                         padding: const EdgeInsets.only(left: 10.0, right: 10.0),
-                        child: Text("5K", style: GoogleFonts.oswald(
-                          textStyle: TextStyle(
-                            color: Colors.white, fontSize: 40.0,),
-                        ),),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text("Última Marca", style: GoogleFonts.oswald(
+                              textStyle: TextStyle(
+                                color: Colors.white, fontSize: 15.0,),
+                            ),),
+                            Text(_displaymarcacarrera == "" ? "00:00:00" : "$_displaymarcacarrera", style: GoogleFonts.oswald(
+                              textStyle: TextStyle(
+                                color: Colors.white, fontSize: 25.0,),
+                            ),),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Pucela Run",style: GoogleFonts.oswald(
-                        textStyle: TextStyle(
-                            color: Colors.white, fontSize: 20.0, letterSpacing: 0.5),
-                      ),),
-                      Text("Carrera Virtual",style: GoogleFonts.oswald(
-                        textStyle: TextStyle(
-                            color: Colors.white, fontSize: 15.0, letterSpacing: 0.5),
-                      ),),
-                    ],
                   ),
                 ],
               ),
@@ -290,8 +357,8 @@ class _HomePageState extends State<HomePage> {
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("DATE", style: TextStyle(color: Colors.white60, fontWeight: FontWeight.bold, fontSize: 15.0),),
-                          Text("Junio 21, 2021", style: TextStyle(color: Colors.white, fontSize: 13.0),),
+                          Text("Fecha", style: TextStyle(color: Colors.white60, fontWeight: FontWeight.bold, fontSize: 15.0),),
+                          Text(_displaydia != "" ? _displaydia : "Sin asignar", style: TextStyle(color: Colors.white, fontSize: 13.0),),
                         ],
                       ),
                     ],
@@ -307,7 +374,7 @@ class _HomePageState extends State<HomePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text("UBICACIÓN", style: TextStyle(color: Colors.white60, fontWeight: FontWeight.bold, fontSize: 15.0),),
-                          Text("Valladolid, ES", style: TextStyle(color: Colors.white, fontSize: 13.0),),
+                          Text("$_displayubicacion, ES", style: TextStyle(color: Colors.white, fontSize: 13.0),),
                         ],
                       ),
                     ],
@@ -321,216 +388,12 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Funciones
-  Widget _panelHeader() {
-    return Padding(
-      padding: const EdgeInsets.all(28.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            "Feed",
-            style: TextStyle(
-                color: Colors.black87,
-                fontWeight: FontWeight.bold,
-                fontSize: 30.0),
-          ),
-          Container(
-            height: 40.0,
-            width: 40.0,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: NetworkImage(imgUser),
-                fit: BoxFit.fill,
-              ),
-            ),
-          )
-        ],
-      ),
+  void _Salir(){
+    storage.clear();
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => splashPage()),
     );
   }
 
-  Widget _panelFondo() {
-    return Positioned(
-      top: 0.0,
-      left: 0.0,
-      right: 0.0,
-      bottom: 0.0,
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/runner.png'),
-              fit: BoxFit.contain,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _cardRunner() {
-    return Padding(
-      padding:
-          const EdgeInsets.only(top: 8.0, bottom: 8.0, left: 30.0, right: 30.0),
-      child: Center(
-        child: Card(
-          child: InkWell(
-            splashColor: Colors.blue.withAlpha(30),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => mapByPage()),
-              );
-            },
-            child: Column(
-              children: [
-                _cardRunnerHeader(),
-                _cardRunnerBody(),
-                Divider(
-                  height: 20,
-                  thickness: 2,
-                  indent: 10,
-                  endIndent: 10,
-                ),
-                _cardRunnerFooter(),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _cardRunnerHeader() {
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Row(
-        children: [
-          Container(
-            height: 40.0,
-            width: 40.0,
-            decoration: BoxDecoration(
-              color: Colors.purple,
-              image: DecorationImage(
-                image: NetworkImage(imgUser),
-                fit: BoxFit.fill,
-              ),
-            ),
-          ),
-          SizedBox(
-            width: 10.0,
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Text(
-                "Felix Cortez Arevalo",
-                style: TextStyle(
-                    fontSize: 20.0,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold),
-              ),
-              Text(
-                "Running",
-                style: TextStyle(fontSize: 15.0, color: Colors.black54),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _cardRunnerBody() {
-    return Padding(
-      padding: const EdgeInsets.only(left: 20.0, right: 20.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Container(
-            decoration: BoxDecoration(color: Colors.black12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(5.0),
-                  child: Row(
-                    children: [
-                      Text("Distancia: "),
-                      Text(
-                        "15.50 km",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(5.0),
-                  child: Row(
-                    children: [
-                      Text("Tiempo: "),
-                      Text(
-                        "120 seg",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(5.0),
-                  child: Row(
-                    children: [
-                      Text("Velocidad: "),
-                      Text(
-                        "15km/h",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(
-            width: 10.0,
-          ),
-          Container(
-            child: Image(
-              image: AssetImage('assets/mapa.jpg'),
-              height: 100.0,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _cardRunnerFooter() {
-    return Row(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Icon(
-            Icons.account_balance_sharp,
-            size: 50.0,
-          ),
-        ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Text("Damian just complketed the chellange of"),
-            Text(
-              "Abril month cycling",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ],
-        )
-      ],
-    );
-  }
 }

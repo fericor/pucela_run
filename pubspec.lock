@@ -128,6 +128,20 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  fluttertoast:
+    dependency: "direct main"
+    description:
+      name: fluttertoast
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "8.0.8"
+  fullscreen:
+    dependency: "direct main"
+    description:
+      name: fullscreen
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.3"
   geolocator:
     dependency: "direct main"
     description:
@@ -171,7 +185,7 @@ packages:
     source: hosted
     version: "2.1.0"
   http:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: http
       url: "https://pub.dartlang.org"
@@ -219,6 +233,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.1"
+  localstorage:
+    dependency: "direct main"
+    description:
+      name: localstorage
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "4.0.0+1"
   maps_toolkit:
     dependency: "direct main"
     description:

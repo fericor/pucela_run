@@ -15,6 +15,8 @@ class DatabaseHelper {
   static final columnId = '_id';
   static final columnLatitud = 'latitud';
   static final columnLongitud = 'longitud';
+  static final columnDistancia = 'distancia';
+  static final columnVelocidad = 'velocidad';
 
   // make this a singleton class
   DatabaseHelper._privateConstructor();
@@ -40,7 +42,9 @@ class DatabaseHelper {
           CREATE TABLE $table (
             $columnId INTEGER PRIMARY KEY,
             $columnLatitud TEXT NOT NULL,
-            $columnLongitud TEXT NOT NULL
+            $columnLongitud TEXT NOT NULL,
+            $columnDistancia TEXT NOT NULL,
+            $columnVelocidad TEXT NOT NULL
           )
           ''');
     await db.execute('''

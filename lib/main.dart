@@ -1,14 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:pucela_run/pages/home_page.dart';
 import 'package:pucela_run/pages/splash_page.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 
 void main() {
-  // WidgetsFlutterBinding.ensureInitialized();
-  // FlutterBackgroundService.initialize(onStart);
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void dispose() {
+    FlutterBackgroundService().sendData(
+      {"action": "stopService"},
+    );
+    // TODO: implement dispose
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -18,17 +30,6 @@ class MyApp extends StatelessWidget {
         brightness: Brightness.light,
         primaryColor: Colors.lightBlue[800],
         accentColor: Colors.cyan[600],
-
-        // Define the default font family.
-        fontFamily: 'Georgia',
-
-        // Define the default TextTheme. Use this to specify the default
-        // text styling for headlines, titles, bodies of text, and more.
-        textTheme: const TextTheme(
-          headline1: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
-          headline6: TextStyle(fontSize: 36.0, fontStyle: FontStyle.italic),
-          bodyText2: TextStyle(fontSize: 14.0, fontFamily: 'Hind'),
-        ),
       ),
       home: splashPage(),
     );

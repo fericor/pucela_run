@@ -1,4 +1,4 @@
-package com.fericor.pucela_run
+package com.madisonmk.pucelaruntracker
 
 import io.flutter.embedding.android.FlutterActivity
 

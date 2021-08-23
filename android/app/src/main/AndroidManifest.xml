@@ -1,11 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.fericor.pucela_run">
+    package="com.madisonmk.pucelaruntracker">
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
    <application
-        android:label="pucela_run"
+        android:label="Pucela Run"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
