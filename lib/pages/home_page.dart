@@ -4,6 +4,7 @@ import 'package:fullscreen/fullscreen.dart';
 import 'package:pucela_run/pages/map_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pucela_run/pages/splash_page.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 
 import 'mapby_page.dart';
 
@@ -12,7 +13,7 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   // Variables
   final LocalStorage storage = new LocalStorage('pucela_app');
 
@@ -32,6 +33,40 @@ class _HomePageState extends State<HomePage> {
     _getInit();
     // TODO: implement initState
     super.initState();
+    WidgetsBinding.instance!.addObserver(this);
+  }
+
+  @override
+  void deactivate() {
+    print("Deactivate");
+    super.deactivate();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance!.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    switch (state) {
+      case AppLifecycleState.inactive:
+        print('appLifeCycleState inactive');
+        break;
+      case AppLifecycleState.resumed:
+        print('appLifeCycleState resumed');
+        break;
+      case AppLifecycleState.paused:
+        print('appLifeCycleState paused');
+        break;
+      case AppLifecycleState.detached:
+        print('FRCA: appLifeCycleState detached');
+        WidgetsFlutterBinding.ensureInitialized();
+        FlutterBackgroundService().stopBackgroundService();
+        break;
+    }
   }
 
   void _getInit() {
@@ -58,13 +93,20 @@ class _HomePageState extends State<HomePage> {
           child: FittedBox(
             child: FloatingActionButton(
                 backgroundColor: Colors.black87,
-                child: const Icon(Icons.play_arrow_outlined, size: 50.0,),
-                onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => MapPage()),
-              );
-            }),
+                child: const Icon(
+                  Icons.play_arrow_outlined,
+                  size: 50.0,
+                ),
+                onPressed: () async {
+                  final reLoadPage = await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MapPage()),
+                  );
+
+                  if (reLoadPage) {
+                    setState(() {_displaymarcacarrera = storage.getItem('LS_MARCA_CARRERA');});
+                  }
+                }),
           ),
         ),
       ),
@@ -77,14 +119,14 @@ class _HomePageState extends State<HomePage> {
             right: 0.0,
             child: Container(
               decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.purple,
-                      Colors.purpleAccent,
-                    ],
-                  ),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.purple,
+                    Colors.purpleAccent,
+                  ],
+                ),
                 /*image: DecorationImage(
                   image: AssetImage('assets/bg_logo.png'),
                   fit: BoxFit.cover,
@@ -187,7 +229,11 @@ class _HomePageState extends State<HomePage> {
 
   Widget _simpleMenuPopup() {
     return PopupMenuButton(
-      icon: Icon(Icons.menu, size: 30.0, color: Colors.white,),
+      icon: Icon(
+        Icons.menu,
+        size: 30.0,
+        color: Colors.white,
+      ),
       itemBuilder: (context) {
         return [
           PopupMenuItem(
@@ -200,13 +246,13 @@ class _HomePageState extends State<HomePage> {
           )
         ];
       },
-      onSelected: (String value){
-        if(value == "mapById"){
+      onSelected: (String value) {
+        if (value == "mapById") {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => mapByPage()),
           );
-        }else{
+        } else {
           _Salir();
         }
       },
@@ -272,8 +318,8 @@ class _HomePageState extends State<HomePage> {
         decoration: BoxDecoration(
           color: Colors.black87,
           borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(15.0),
-              bottomLeft: Radius.circular(15.0),
+            topLeft: Radius.circular(15.0),
+            bottomLeft: Radius.circular(15.0),
           ),
         ),
         child: Padding(
@@ -291,14 +337,23 @@ class _HomePageState extends State<HomePage> {
                         child: Container(
                           decoration: BoxDecoration(
                             color: Colors.purple,
-                            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10.0)),
                           ),
                           child: Padding(
-                            padding: const EdgeInsets.only(left: 10.0, right: 10.0),
-                            child: Text(_displaydistancia != "" ? _displaydistancia : "NS", style: GoogleFonts.oswald(
-                              textStyle: TextStyle(
-                                color: Colors.white, fontSize: 40.0,),
-                            ),),
+                            padding:
+                                const EdgeInsets.only(left: 10.0, right: 10.0),
+                            child: Text(
+                              _displaydistancia != ""
+                                  ? _displaydistancia
+                                  : "NS",
+                              style: GoogleFonts.oswald(
+                                textStyle: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 40.0,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -306,14 +361,24 @@ class _HomePageState extends State<HomePage> {
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("Pucela Run",style: GoogleFonts.oswald(
-                            textStyle: TextStyle(
-                                color: Colors.white, fontSize: 20.0, letterSpacing: 0.5),
-                          ),),
-                          Text(_displaytipocarrera,style: GoogleFonts.oswald(
-                            textStyle: TextStyle(
-                                color: Colors.white, fontSize: 15.0, letterSpacing: 0.5),
-                          ),),
+                          Text(
+                            "Pucela Run",
+                            style: GoogleFonts.oswald(
+                              textStyle: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20.0,
+                                  letterSpacing: 0.5),
+                            ),
+                          ),
+                          Text(
+                            _displaytipocarrera,
+                            style: GoogleFonts.oswald(
+                              textStyle: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15.0,
+                                  letterSpacing: 0.5),
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -330,14 +395,26 @@ class _HomePageState extends State<HomePage> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            Text("Última Marca", style: GoogleFonts.oswald(
-                              textStyle: TextStyle(
-                                color: Colors.white, fontSize: 15.0,),
-                            ),),
-                            Text(_displaymarcacarrera == "" ? "00:00:00" : "$_displaymarcacarrera", style: GoogleFonts.oswald(
-                              textStyle: TextStyle(
-                                color: Colors.white, fontSize: 25.0,),
-                            ),),
+                            Text(
+                              "Última Marca",
+                              style: GoogleFonts.oswald(
+                                textStyle: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15.0,
+                                ),
+                              ),
+                            ),
+                            Text(
+                              _displaymarcacarrera == ""
+                                  ? "00:00:00"
+                                  : "$_displaymarcacarrera",
+                              style: GoogleFonts.oswald(
+                                textStyle: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 25.0,
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -351,14 +428,28 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(10.0),
-                        child: Icon(Icons.calendar_today, size: 30.0, color: Colors.white,),
+                        child: Icon(
+                          Icons.calendar_today,
+                          size: 30.0,
+                          color: Colors.white,
+                        ),
                       ),
                       Column(
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("Fecha", style: TextStyle(color: Colors.white60, fontWeight: FontWeight.bold, fontSize: 15.0),),
-                          Text(_displaydia != "" ? _displaydia : "Sin asignar", style: TextStyle(color: Colors.white, fontSize: 13.0),),
+                          Text(
+                            "Fecha",
+                            style: TextStyle(
+                                color: Colors.white60,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15.0),
+                          ),
+                          Text(
+                            _displaydia != "" ? _displaydia : "Sin asignar",
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 13.0),
+                          ),
                         ],
                       ),
                     ],
@@ -367,14 +458,28 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(10.0),
-                        child: Icon(Icons.location_on, size: 30.0, color: Colors.white,),
+                        child: Icon(
+                          Icons.location_on,
+                          size: 30.0,
+                          color: Colors.white,
+                        ),
                       ),
                       Column(
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("UBICACIÓN", style: TextStyle(color: Colors.white60, fontWeight: FontWeight.bold, fontSize: 15.0),),
-                          Text("$_displayubicacion, ES", style: TextStyle(color: Colors.white, fontSize: 13.0),),
+                          Text(
+                            "UBICACIÓN",
+                            style: TextStyle(
+                                color: Colors.white60,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15.0),
+                          ),
+                          Text(
+                            "$_displayubicacion, ES",
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 13.0),
+                          ),
                         ],
                       ),
                     ],
@@ -388,12 +493,11 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _Salir(){
+  void _Salir() {
     storage.clear();
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => splashPage()),
     );
   }
-
 }

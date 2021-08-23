@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-
+import 'package:google_fonts/google_fonts.dart';
 
 class TimerCountDownWidget extends StatefulWidget {
   Function onTimerFinish;
@@ -11,33 +11,57 @@ class TimerCountDownWidget extends StatefulWidget {
   State<StatefulWidget> createState() => TimerCountDownWidgetState();
 }
 
-class TimerCountDownWidgetState extends State<TimerCountDownWidget> {
-  Timer _timer;
-  int _countdownTime = 0;
+class TimerCountDownWidgetState extends State<TimerCountDownWidget>
+    with SingleTickerProviderStateMixin {
+  late Timer _timer;
+  int _countdownTime = 5;
+
+  late AnimationController _animationController;
+  late Animation _animation;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    _animationController =
+        AnimationController(duration: Duration(seconds: 10), vsync: this);
+    _animationController.repeat(reverse: true);
+    _animation = Tween(begin: 1.0, end: 55.0).animate(_animationController)
+      ..addListener(() {});
+    super.initState();
+
+    startCountdownTimer();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        if (_countdownTime == 0) {
-          setState(() {
-            _countdownTime = 60;
-          });
-          // Iniciar cuenta regresiva
-          startCountdownTimer();
-        }
-      },
-      child: RaisedButton(
-        color: Colors.black12,
-        onPressed: () {  },
-        child: Text(
-          _countdownTime > 0 ? 'Re-adquirir después de $ _countdownTime' : 'obtener código de verificación',
-          style: TextStyle(
-            fontSize: 14,
-            color: _countdownTime > 0
-                ? Colors.white
-                : Color.fromARGB(255, 17, 132, 255),
+    return Scaffold(
+      backgroundColor: Colors.purple.withOpacity(0.5),
+      body: Center(
+        child: Container(
+          width: 250,
+          height: 250,
+          child: Center(
+            child: Text(
+              _countdownTime > 0 ? "$_countdownTime" : "0",
+              style: GoogleFonts.oswald(
+                textStyle: TextStyle(
+                    color: _countdownTime > 0
+                        ? Colors.purple
+                        : Color.fromARGB(255, 17, 132, 255),
+                    fontSize: 150.0,
+                    letterSpacing: 0.5),
+              ),
+            ),
           ),
+          decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.black87,
+              boxShadow: [
+                BoxShadow(
+                    color: Color.fromARGB(130, 237, 125, 58),
+                    blurRadius: _animation.value,
+                    spreadRadius: _animation.value)
+              ]),
         ),
       ),
     );
@@ -58,19 +82,18 @@ class TimerCountDownWidgetState extends State<TimerCountDownWidget> {
 //
 //    _timer = Timer.periodic(oneSec, callback);
 
-
     _timer = Timer.periodic(
         Duration(seconds: 1),
-            (Timer timer) => {
-          setState(() {
-            if (_countdownTime < 1) {
-              widget.onTimerFinish();
-              _timer.cancel();
-            } else {
-              _countdownTime = _countdownTime - 1;
-            }
-          })
-        });
+        (Timer timer) => {
+              setState(() {
+                if (_countdownTime < 2) {
+                  widget.onTimerFinish();
+                  _timer.cancel();
+                } else {
+                  _countdownTime = _countdownTime - 1;
+                }
+              })
+            });
   }
 
   @override

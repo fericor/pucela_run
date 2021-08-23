@@ -22,9 +22,9 @@ class _splashPageState extends State<splashPage> {
 
   @override
   void initState() {
-    _isServiceLogin();
     // TODO: implement initState
     super.initState();
+    _isServiceLogin();
   }
 
   Future<void> _isServiceLogin() async {
@@ -66,7 +66,6 @@ class _splashPageState extends State<splashPage> {
             context,
             MaterialPageRoute(builder: (context) => HomePage()),
           );
-
         } else {
           setState(() {
             _isLogin = false;
@@ -268,17 +267,17 @@ class _splashPageState extends State<splashPage> {
               ),
               child: Center(
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      CircularProgressIndicator(
-                        strokeWidth: 5.0,
-                        color: Colors.white,
-                        backgroundColor: Colors.purple,
-                      ),
-                      Image.asset('assets/logoPucelaRun.png'),
-                    ],
-                  )),
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    strokeWidth: 5.0,
+                    color: Colors.white,
+                    backgroundColor: Colors.purple,
+                  ),
+                  Image.asset('assets/logoPucelaRun.png'),
+                ],
+              )),
             )),
       ],
     );
@@ -310,28 +309,29 @@ class _splashPageState extends State<splashPage> {
   Widget build(BuildContext context) {
     FullScreen.enterFullScreen(FullScreenMode.EMERSIVE_STICKY);
     return Scaffold(
-      body: !_isLogin ? Stack(
-        children: [
-          _panelFondo(),
-          Positioned(
-            top: 20.0,
-            bottom: 420.0,
-            left: 10.0,
-            right: 10.0,
-            child: Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/logoPucelaRun.png'),
-                  fit: BoxFit.fitHeight,
+      body: !_isLogin
+          ? Stack(
+              children: [
+                _panelFondo(),
+                Positioned(
+                  top: 20.0,
+                  bottom: 420.0,
+                  left: 10.0,
+                  right: 10.0,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage('assets/logoPucelaRun.png'),
+                        fit: BoxFit.fitHeight,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ),
-          _panelTexto("Presencial o Virtual", "10K. 5K. 2K"),
-          _btnsplash(context),
-
-        ],
-      ): _panelLoading(),
+                _panelTexto("Presencial o Virtual", "10K. 5K. 2K"),
+                _btnsplash(context),
+              ],
+            )
+          : _panelLoading(),
     );
   }
 }

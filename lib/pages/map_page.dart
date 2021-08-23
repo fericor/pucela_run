@@ -12,6 +12,7 @@ import 'package:localstorage/localstorage.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:pucela_run/widgets/pulsacion_page.dart';
 import 'package:fullscreen/fullscreen.dart';
 
 class MapPage extends StatefulWidget {
@@ -33,6 +34,7 @@ class _MapPageState extends State<MapPage> {
   bool _isButtonDisabled = true;
   bool _isHidenPanel = true;
   bool _isTerminoRecorrido = false;
+  bool _isPulsacion = false;
   String _stopwatchText = '00:00:00';
   final _stopWatch = new Stopwatch();
   final _timeout = const Duration(seconds: 1);
@@ -90,24 +92,22 @@ class _MapPageState extends State<MapPage> {
 
   _setMarcaTime() async {
     var url = Uri.parse('https://pucelarun.es/wp-admin/admin-ajax.php');
-    var response = await http.post(url, body: {'action': 'upload_time',
+    var response = await http.post(url, body: {
+      'action': 'upload_time',
       'id': _displayiduser,
       'timeStamp': _stopwatchText, // _stopwatchText, // DateTime.now(),
       'completed': _isTerminoRecorrido.toString(),
       'distance': _distancia.toString(),
       'distanceRun': '2000',
-      'coordinates': points.toString()});
+      'coordinates': points.toString()
+    });
 
     if (response.statusCode == 200) {
       var jsonResponse = convert.jsonDecode(response.body) as Map<String, dynamic>;
-      storage.setItem('LS_MARCA_CARRERA', _stopwatchText);
-      print("FRCA: $jsonResponse");
-      print("FRCA: $points");
-      // storage.setItem('LS_TOKEN', jsonResponse['token']);
-
-    } else {
-
-    }
+      setState(() {
+        storage.setItem('LS_MARCA_CARRERA', _stopwatchText);
+      });
+    } else {}
   }
 
   Future<void> _getPosicionActual() async {
@@ -193,7 +193,7 @@ class _MapPageState extends State<MapPage> {
       child: Container(
         child: Column(
           children: [
-            StreamBuilder<Map<String, dynamic>?> (
+            StreamBuilder<Map<String, dynamic>?>(
               stream: FlutterBackgroundService().onDataReceived,
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
@@ -218,67 +218,71 @@ class _MapPageState extends State<MapPage> {
                   // points.add(LatLng(data["lat"], data["lng"]));
 
                   // points.clear();
-                  if(data["route"] != null){
+                  if (data["route"] != null) {
                     data["route"].forEach((item) {
-                      points.add(LatLng(double.parse(item["latitud"]), double.parse(item["longitud"])));
+                      points.add(LatLng(double.parse(item["latitud"]),
+                          double.parse(item["longitud"])));
                     });
-                  }else{
+                  } else {
                     points.add(LatLng(data["lat"], data["lng"]));
                   }
                 }
 
                 // Comprovamos Que ya ha termninado la carrera
-                switch(_displaydistancia) {
-                  case "2K": {
-                    if(double.parse(_distancia) >= 2.0){
-                      _startStopButtonPressed();
-                      Fluttertoast.showToast(
-                         msg: "Ha terminado tu recorrido.",
-                         toastLength: Toast.LENGTH_LONG,
-                         gravity: ToastGravity.TOP,
-                         timeInSecForIosWeb: 1,
-                         backgroundColor: Colors.red,
-                         textColor: Colors.white,
-                         fontSize: 26.0
-                      );
+                switch (_displaydistancia) {
+                  case "2K":
+                    {
+                      if (double.parse(_distancia) >= 2.0) {
+                        _startStopButtonPressed();
+                        // Fluttertoast.showToast(
+                        //    msg: "Ha terminado tu recorrido.",
+                        //    toastLength: Toast.LENGTH_LONG,
+                        //    gravity: ToastGravity.TOP,
+                        //    timeInSecForIosWeb: 1,
+                        //    backgroundColor: Colors.red,
+                        //    textColor: Colors.white,
+                        //    fontSize: 26.0
+                        // );
+                      }
                     }
-                  }
-                  break;
+                    break;
 
-                  case "5K": {
-                    if(double.parse(_distancia) >= 5.0){
-                      _startStopButtonPressed();
-                      Fluttertoast.showToast(
-                          msg: "Ha terminado tu recorrido.",
-                          toastLength: Toast.LENGTH_LONG,
-                          gravity: ToastGravity.TOP,
-                          timeInSecForIosWeb: 1,
-                          backgroundColor: Colors.red,
-                          textColor: Colors.white,
-                          fontSize: 26.0
-                      );
+                  case "5K":
+                    {
+                      if (double.parse(_distancia) >= 5.0) {
+                        _startStopButtonPressed();
+                        // Fluttertoast.showToast(
+                        //     msg: "Ha terminado tu recorrido.",
+                        //     toastLength: Toast.LENGTH_LONG,
+                        //     gravity: ToastGravity.TOP,
+                        //     timeInSecForIosWeb: 1,
+                        //     backgroundColor: Colors.red,
+                        //     textColor: Colors.white,
+                        //     fontSize: 26.0
+                        // );
+                      }
                     }
-                  }
-                  break;
+                    break;
 
-                  case "10K": {
-                    if(double.parse(_distancia) >= 10.0){
-                      _startStopButtonPressed();
-                      Fluttertoast.showToast(
-                          msg: "Ha terminado tu recorrido.",
-                          toastLength: Toast.LENGTH_LONG,
-                          gravity: ToastGravity.TOP,
-                          timeInSecForIosWeb: 1,
-                          backgroundColor: Colors.red,
-                          textColor: Colors.white,
-                          fontSize: 26.0
-                      );
+                  case "10K":
+                    {
+                      if (double.parse(_distancia) >= 10.0) {
+                        _startStopButtonPressed();
+                        // Fluttertoast.showToast(
+                        //     msg: "Ha terminado tu recorrido.",
+                        //     toastLength: Toast.LENGTH_LONG,
+                        //     gravity: ToastGravity.TOP,
+                        //     timeInSecForIosWeb: 1,
+                        //     backgroundColor: Colors.red,
+                        //     textColor: Colors.white,
+                        //     fontSize: 26.0
+                        // );
+                      }
                     }
-                  }
-                  break;
+                    break;
                 }
 
-                return Text("");  // data["vFinal"].toString()
+                return Text(""); // data["vFinal"].toString()
               },
             ),
             // Text("Velocidad: ${_velocidad.toString()} | Lat: ${lat.toString()}"),
@@ -345,12 +349,51 @@ class _MapPageState extends State<MapPage> {
               borderRadius: BorderRadius.all(Radius.circular(10)),
             ),
             child: InkWell(
-              onTap: (){
-                Navigator.pop(context);
+              onTap: () {
+                Widget cancelButton1 = FlatButton(
+                  child: Text("Cancelar"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                );
+                Widget continueButton1 = FlatButton(
+                  child: Text("Continuar"),
+                  onPressed: () {
+                    !_isButtonDisabled ? _resetButtonPressed() : null;
+                    Navigator.of(context).pop();
+                    Navigator.pop(context);
+                  },
+                );
+
+                AlertDialog alert1 = AlertDialog(
+                  title: Text("¿Estás seguro de que quieres pararlo?"),
+                  content:
+                  Text("Si paras el recorrido tendrás que empezarlo de nuevo."),
+                  actions: [
+                    cancelButton1,
+                    continueButton1,
+                  ],
+                );
+
+                if (_stopWatch.isRunning) {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return alert1;
+                    },
+                  );
+                }else{
+                  Navigator.pop(context, true);
+                }
+
               },
               child: Padding(
                 padding: EdgeInsets.all(8.0),
-                child: Icon(Icons.arrow_back, size: 30.0, color: Colors.purple,),
+                child: Icon(
+                  Icons.arrow_back,
+                  size: 30.0,
+                  color: Colors.purple,
+                ),
               ),
             ),
           ),
@@ -366,7 +409,9 @@ class _MapPageState extends State<MapPage> {
                 _stopwatchText,
                 style: GoogleFonts.oswald(
                   textStyle: TextStyle(
-                      color: Colors.black87, fontSize: 45.0, letterSpacing: 0.5),
+                      color: Colors.black87,
+                      fontSize: 45.0,
+                      letterSpacing: 0.5),
                 ),
               ),
             ),
@@ -390,7 +435,11 @@ class _MapPageState extends State<MapPage> {
               },
               child: Padding(
                 padding: EdgeInsets.all(8.0),
-                child: Icon(Icons.my_location, size: 30.0, color: Colors.purple,),
+                child: Icon(
+                  Icons.my_location,
+                  size: 30.0,
+                  color: Colors.purple,
+                ),
               ),
             ),
           ),
@@ -402,8 +451,16 @@ class _MapPageState extends State<MapPage> {
   Widget _btnIniciar() {
     return MaterialButton(
       onPressed: () {
-        _startStopButtonPressed();
-        setState(() {});
+        if(!_isButtonDisabled){
+          setState(() {
+            _isPulsacion = false;
+          });
+        }else{
+          setState(() {
+            _isPulsacion = true;
+          });
+        }
+
       },
       color: Colors.purple,
       textColor: Colors.white,
@@ -437,28 +494,30 @@ class _MapPageState extends State<MapPage> {
       onPressed: () {
         Widget cancelButton = FlatButton(
           child: Text("Cancelar"),
-          onPressed:  () {
+          onPressed: () {
             Navigator.of(context).pop();
           },
         );
         Widget continueButton = FlatButton(
           child: Text("Continuar"),
-          onPressed:  () {
+          onPressed: () {
             !_isButtonDisabled ? _resetButtonPressed() : null;
             Navigator.of(context).pop();
+            _setMarcaTime();
           },
         );
 
         AlertDialog alert = AlertDialog(
           title: Text("¿Estás seguro de que quieres pararlo?"),
-          content: Text("Si paras el recorrido tendrás que empezarlo de nuevo."),
+          content:
+              Text("Si paras el recorrido tendrás que empezarlo de nuevo."),
           actions: [
             cancelButton,
             continueButton,
           ],
         );
 
-        if(!_isButtonDisabled){
+        if (!_isButtonDisabled) {
           showDialog(
             context: context,
             builder: (BuildContext context) {
@@ -466,7 +525,6 @@ class _MapPageState extends State<MapPage> {
             },
           );
         }
-
       },
       color: !_isButtonDisabled ? Colors.redAccent : Colors.black26,
       textColor: Colors.white,
@@ -505,69 +563,69 @@ class _MapPageState extends State<MapPage> {
 
   Widget _btnsplash() {
     return GestureDetector(
-        onTap: () {
-          Widget cancelButton = FlatButton(
-            child: Text("Cancelar"),
-            onPressed:  () {
-              Navigator.of(context).pop();
-            },
-          );
-          Widget continueKOButton = FlatButton(
-            child: Text("Continuar"),
-            onPressed:  () {
-              if(_isButtonDisabled){
-                _setMarcaTime();
-                _resetButtonPressed();
+      onTap: () {
+        Widget cancelButton = FlatButton(
+          child: Text("Cancelar"),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        );
+        Widget continueKOButton = FlatButton(
+          child: Text("Continuar"),
+          onPressed: () {
+            if (_isButtonDisabled) {
+              _setMarcaTime();
+              _resetButtonPressed();
 
-                setState(() {
-                  _isTerminoRecorrido = false;
-                });
-              }
+              setState(() {
+                _isTerminoRecorrido = false;
+              });
+            }
 
-              Fluttertoast.showToast(
-                  msg: "Información guardada con exito.",
-                  toastLength: Toast.LENGTH_SHORT,
-                  gravity: ToastGravity.CENTER,
-                  timeInSecForIosWeb: 1,
-                  backgroundColor: Colors.red,
-                  textColor: Colors.white,
-                  fontSize: 16.0
-              );
-              Navigator.of(context).pop();
-            },
-          );
-          Widget continueOKButton = FlatButton(
-            child: Text("Continuar"),
-            onPressed:  () {
-              if(_isButtonDisabled){
-                _setMarcaTime();
-                _resetButtonPressed();
+            Fluttertoast.showToast(
+                msg: "Información guardada con exito.",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.CENTER,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.red,
+                textColor: Colors.white,
+                fontSize: 16.0);
+            Navigator.of(context).pop();
+          },
+        );
+        Widget continueOKButton = FlatButton(
+          child: Text("Continuar"),
+          onPressed: () {
+            if (_isButtonDisabled) {
+              _setMarcaTime();
+              _resetButtonPressed();
 
-                setState(() {
-                  _isTerminoRecorrido = true;
-                });
-              }
+              setState(() {
+                _isTerminoRecorrido = true;
+              });
+            }
 
-              Fluttertoast.showToast(
-                  msg: "Información guardada con exito.",
-                  toastLength: Toast.LENGTH_SHORT,
-                  gravity: ToastGravity.CENTER,
-                  timeInSecForIosWeb: 1,
-                  backgroundColor: Colors.red,
-                  textColor: Colors.white,
-                  fontSize: 16.0
-              );
-              Navigator.of(context).pop();
-            },
-          );
+            Fluttertoast.showToast(
+                msg: "Información guardada con exito.",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.CENTER,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.red,
+                textColor: Colors.white,
+                fontSize: 16.0);
+            Navigator.of(context).pop();
+          },
+        );
 
-          switch(_displaydistancia) {
-            case "2K": {
+        switch (_displaydistancia) {
+          case "2K":
+            {
               print(_distancia);
-              if(double.parse(_distancia) < 2.0){
+              if (double.parse(_distancia) < 2.0) {
                 AlertDialog alert = AlertDialog(
                   title: Text("No has terminado el recorrido"),
-                  content: Text("Si lo subes tu recorrido se marcará como no terminado. ¿Estás seguro de que quieres publicarla?"),
+                  content: Text(
+                      "Si lo subes tu recorrido se marcará como no terminado. ¿Estás seguro de que quieres publicarla?"),
                   actions: [
                     cancelButton,
                     continueKOButton,
@@ -579,7 +637,7 @@ class _MapPageState extends State<MapPage> {
                     return alert;
                   },
                 );
-              }else{
+              } else {
                 AlertDialog alert = AlertDialog(
                   title: Text("Recorrido terminado"),
                   content: Text("Se enviara la información al servidor."),
@@ -598,40 +656,41 @@ class _MapPageState extends State<MapPage> {
             }
             break;
 
-            case "5K": {  print("Good"); }
+          case "5K":
+            {
+              print("Good");
+            }
             break;
 
-            case "10K": {  print("Fair"); }
+          case "10K":
+            {
+              print("Fair");
+            }
             break;
 
-            default: { print("Invalid choice"); }
+          default:
+            {
+              print("Invalid choice");
+            }
             break;
-          }
-
-
-
-
-
-
-
-
-        },
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.purple,
-            borderRadius: BorderRadius.all(Radius.circular(15.0)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Center(
-              child: Text(
-                "Subir nueva marca",
-                style: TextStyle(color: Colors.white, fontSize: 25.0),
-              ),
+        }
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.purple,
+          borderRadius: BorderRadius.all(Radius.circular(15.0)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Center(
+            child: Text(
+              "Subir nueva marca",
+              style: TextStyle(color: Colors.white, fontSize: 25.0),
             ),
           ),
         ),
-      );
+      ),
+    );
   }
 
   Widget _panelScrool(BuildContext context) {
@@ -644,60 +703,59 @@ class _MapPageState extends State<MapPage> {
           height: MediaQuery.of(context).size.height,
           child: SingleChildScrollView(
             controller: scrollController,
-
-              child: Column(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(15),
-                        topRight: Radius.circular(15),
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 8.0, right: 8.0),
-                      child: IconButton(
-                        icon: Icon(
-                          _isHidenPanel ? Icons.arrow_circle_down_rounded : Icons.arrow_circle_up_rounded,
-                          size: 30.0,
-                        ),
-                        onPressed: () {
-                          if(_isHidenPanel){
-                            scrollController.jumpTo(-190);
-                            scrollController.animateTo(20,
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.bounceIn);
-                            setState(() {
-                              _isHidenPanel = false;
-                            });
-                          }else{
-                            scrollController.jumpTo(0);
-                            scrollController.animateTo(20,
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.bounceOut);
-                            setState(() {
-                              _isHidenPanel = true;
-                            });
-                          }
-
-                        },
-                      ),
+            child: Column(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(15),
+                      topRight: Radius.circular(15),
                     ),
                   ),
-                  Container(
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(20),
-                        topRight: Radius.circular(20),
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+                    child: IconButton(
+                      icon: Icon(
+                        _isHidenPanel
+                            ? Icons.arrow_circle_down_rounded
+                            : Icons.arrow_circle_up_rounded,
+                        size: 30.0,
                       ),
+                      onPressed: () {
+                        if (_isHidenPanel) {
+                          scrollController.jumpTo(-190);
+                          scrollController.animateTo(20,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.bounceIn);
+                          setState(() {
+                            _isHidenPanel = false;
+                          });
+                        } else {
+                          scrollController.jumpTo(0);
+                          scrollController.animateTo(20,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.bounceOut);
+                          setState(() {
+                            _isHidenPanel = true;
+                          });
+                        }
+                      },
                     ),
-                    child: _panelControls(),
                   ),
-                ],
-              ),
-
+                ),
+                Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                  ),
+                  child: _panelControls(),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -715,9 +773,7 @@ class _MapPageState extends State<MapPage> {
             height: 10.0,
           ),
           Container(
-            decoration: BoxDecoration(
-              color: Colors.white
-            ),
+            decoration: BoxDecoration(color: Colors.white),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -772,6 +828,14 @@ class _MapPageState extends State<MapPage> {
           ),
           _panelHomeInfo(),
           _panelScrool(context),
+          _isPulsacion ? TimerCountDownWidget(
+            onTimerFinish: () {
+              _startStopButtonPressed();
+              setState(() {
+                _isPulsacion = false;
+              });
+            },
+          ) : Text("")
         ],
       ),
     );
@@ -890,9 +954,8 @@ Future<void> onStart() async {
 
   bool isLocationEnabled = await Geolocator.isLocationServiceEnabled();
 
-  Geolocator.getPositionStream()
-      .listen((Position position) async {
-    double _speed = position.speed < 0.9
+  Geolocator.getPositionStream().listen((Position position) async {
+    double _speed = position.speed < 0.5
         ? 0
         : position.speed * 3.6; //Converting position speed from m/s to km/hr
 
