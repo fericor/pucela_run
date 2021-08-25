@@ -4,7 +4,6 @@ import 'package:fullscreen/fullscreen.dart';
 import 'package:pucela_run/pages/map_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pucela_run/pages/splash_page.dart';
-import 'package:flutter_background_service/flutter_background_service.dart';
 
 import 'mapby_page.dart';
 
@@ -13,7 +12,7 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
+class _HomePageState extends State<HomePage> {
   // Variables
   final LocalStorage storage = new LocalStorage('pucela_app');
 
@@ -33,7 +32,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     _getInit();
     // TODO: implement initState
     super.initState();
-    WidgetsBinding.instance!.addObserver(this);
   }
 
   @override
@@ -44,32 +42,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   @override
   void dispose() {
-    WidgetsBinding.instance!.removeObserver(this);
     super.dispose();
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-    switch (state) {
-      case AppLifecycleState.inactive:
-        print('appLifeCycleState inactive');
-        break;
-      case AppLifecycleState.resumed:
-        print('appLifeCycleState resumed');
-        break;
-      case AppLifecycleState.paused:
-        print('appLifeCycleState paused');
-        break;
-      case AppLifecycleState.detached:
-        print('FRCA: appLifeCycleState detached');
-        WidgetsFlutterBinding.ensureInitialized();
-        FlutterBackgroundService().stopBackgroundService();
-        break;
-    }
-  }
-
-  void _getInit() {
+  _getInit() {
     _displayname = storage.getItem('LS_USER_DISPLAY_NAME');
     _displayemail = storage.getItem('LS_USER_MAIL');
     _displaydistancia = storage.getItem('LS_DISTANCIA');

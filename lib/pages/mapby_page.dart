@@ -80,8 +80,7 @@ class _mapByPageState extends State<mapByPage> {
         layers: [
           TileLayerOptions(
             // urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-              urlTemplate:
-              "https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZmVyaWNvciIsImEiOiJja3J3ZHpzNnQwZm54Mm5xamo0OHN6bDBhIn0.2EtgIWzOEgy6AKorHcL44w",
+              urlTemplate: "https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZmVyaWNvciIsImEiOiJja3J3ZHpzNnQwZm54Mm5xamo0OHN6bDBhIn0.2EtgIWzOEgy6AKorHcL44w",
               subdomains: ['a', 'b', 'c']),
           MarkerLayerOptions(
             markers: [

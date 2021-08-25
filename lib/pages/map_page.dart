@@ -15,6 +15,7 @@ import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:pucela_run/widgets/pulsacion_page.dart';
 import 'package:fullscreen/fullscreen.dart';
 
+
 class MapPage extends StatefulWidget {
   @override
   _MapPageState createState() => _MapPageState();
@@ -72,14 +73,14 @@ class _MapPageState extends State<MapPage> {
 
   @override
   void dispose() {
-    _resetButtonPressed();
+    // _resetButtonPressed();
     FlutterBackgroundService().sendData(
       {"action": "stopService"},
     );
     super.dispose();
   }
 
-  Future<void> _getInit() async {
+  _getInit() {
     _displayname = storage.getItem('LS_USER_DISPLAY_NAME');
     _displayemail = storage.getItem('LS_USER_MAIL');
     _displaydistancia = storage.getItem('LS_DISTANCIA');
@@ -959,7 +960,7 @@ Future<void> onStart() async {
         ? 0
         : position.speed * 3.6; //Converting position speed from m/s to km/hr
 
-    if (_speed != 0) {
+    // if (_speed != 0) {
       final allRows = await dbHelper.queryAllRows('trackers');
 
       double totalDistance = 0;
@@ -984,7 +985,7 @@ Future<void> onStart() async {
       lngS = position.longitude;
       latS = position.latitude;
       velocidadS = _speed; // position.speed;
-    }
+    // }
 
     service.setNotificationInfo(
       title: "Pucela Runnning",

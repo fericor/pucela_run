@@ -22,12 +22,13 @@ class _splashPageState extends State<splashPage> {
 
   @override
   void initState() {
+    _isServiceLogin();
     // TODO: implement initState
     super.initState();
-    _isServiceLogin();
   }
 
   Future<void> _isServiceLogin() async {
+
     setState(() {
       _isLogin = true;
     });

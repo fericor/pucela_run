@@ -21,6 +21,8 @@ class TimerCountDownWidgetState extends State<TimerCountDownWidget>
 
   @override
   void initState() {
+    startCountdownTimer();
+
     // TODO: implement initState
     _animationController =
         AnimationController(duration: Duration(seconds: 10), vsync: this);
@@ -28,8 +30,6 @@ class TimerCountDownWidgetState extends State<TimerCountDownWidget>
     _animation = Tween(begin: 1.0, end: 55.0).animate(_animationController)
       ..addListener(() {});
     super.initState();
-
-    startCountdownTimer();
   }
 
   @override
@@ -98,9 +98,10 @@ class TimerCountDownWidgetState extends State<TimerCountDownWidget>
 
   @override
   void dispose() {
-    super.dispose();
+    _animationController.dispose();
     if (_timer != null) {
       _timer.cancel();
     }
+    super.dispose();
   }
 }

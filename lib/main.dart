@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:pucela_run/pages/splash_page.dart';
-import 'package:flutter_background_service/flutter_background_service.dart';
 
 void main() {
   runApp(MyApp());
@@ -12,14 +11,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  @override
-  void dispose() {
-    FlutterBackgroundService().sendData(
-      {"action": "stopService"},
-    );
-    // TODO: implement dispose
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
