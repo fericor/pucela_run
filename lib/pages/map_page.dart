@@ -4,17 +4,14 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:pucela_run/functions/database.dart';
-import 'package:pucela_run/functions/geolocation.dart';
 import 'package:pucela_run/functions/hellpers.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:localstorage/localstorage.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:background_location/background_location.dart';
 import 'package:pucela_run/widgets/pulsacion_page.dart';
 import 'package:fullscreen/fullscreen.dart';
-
 
 class MapPage extends StatefulWidget {
   @override
@@ -25,8 +22,7 @@ class _MapPageState extends State<MapPage> {
   // reference to our single class that manages the functions
   final dbHelper = DatabaseHelper.instance;
   final fns = FnsHellper.instance;
-  final services = FnsGeolacalizacion.instance;
-  final LocalStorage storage = new LocalStorage('pucela_app');
+  late SharedPreferences sharedPreferences;
 
   // VARIABLES GLOBALES
 
@@ -44,7 +40,6 @@ class _MapPageState extends State<MapPage> {
   bool isLocation = false;
   var points = <LatLng>[];
 
-  late StreamSubscription<Position> _positionStream;
   double lng = 0, lat = 0, lngInit = 0, latInit = 0;
   String _velocidad = "0", _distancia = "0";
   int _tiempo = 0;
@@ -62,33 +57,158 @@ class _MapPageState extends State<MapPage> {
   String _displayavatar = "assets/logo_mini.png";
   String _displayubicacion = "Valladolid";
 
+  String latitude = 'waiting...';
+  String longitude = 'waiting...';
+  String altitude = 'waiting...';
+  String accuracy = 'waiting...';
+  String bearing = 'waiting...';
+  String speed = 'waiting...';
+  String time = 'waiting...';
+
   @override
   void initState() {
     _getInit();
-    _getPosicionActual();
-    // _deletePointsAll();
+    // _initServicio();
+    _deletePointsAll();
     // TODO: implement initState
     super.initState();
   }
 
   @override
   void dispose() {
-    // _resetButtonPressed();
-    FlutterBackgroundService().sendData(
-      {"action": "stopService"},
-    );
+    BackgroundLocation.stopLocationService();
+    _resetButtonPressed();
     super.dispose();
   }
 
-  _getInit() {
-    _displayname = storage.getItem('LS_USER_DISPLAY_NAME');
-    _displayemail = storage.getItem('LS_USER_MAIL');
-    _displaydistancia = storage.getItem('LS_DISTANCIA');
-    _displaydia = storage.getItem('LS_DIA');
-    _displaymarcacarrera = storage.getItem('LS_MARCA_CARRERA');
-    _displaytipocarrera = storage.getItem('LS_TIPO_CARRERA');
-    _displayiduser = storage.getItem('LS_USER_ID');
-    _displayavatar = storage.getItem('LS_AVATAR');
+  _initServicio() async {
+    await BackgroundLocation.setAndroidNotification(
+      title: 'Pucela Run',
+      message:
+          "Duración: ${DateTime.now().toIso8601String()} \n Lat: ${lat} \t Lng: ${lng}",
+      icon: '@mipmap/ic_launcher',
+    );
+
+    // await BackgroundLocation.setAndroidConfiguration(3000);
+    await BackgroundLocation.startLocationService(distanceFilter: 10);
+    BackgroundLocation.getLocationUpdates((location) {
+      setState(() async {
+        isLocation = true;
+
+        final allRows = await dbHelper.queryAllRows('trackers');
+
+        double totalDistance = 0;
+        for (int i = 0; i < allRows.length - 1; i++) {
+          totalDistance += fns.coordinateDistance(
+            double.parse(allRows[i]["latitud"]),
+            double.parse(allRows[i]["longitud"]),
+            double.parse(allRows[i + 1]["latitud"]),
+            double.parse(allRows[i + 1]["longitud"]),
+          );
+        }
+
+        double _speed = location.speed! < 0.5
+            ? 0
+            : location.speed! *
+                3.6; //Converting position speed from m/s to km/hr
+
+        Map<String, dynamic> row = {
+          DatabaseHelper.columnLatitud: location.latitude.toString(),
+          DatabaseHelper.columnLongitud: location.longitude.toString(),
+          DatabaseHelper.columnDistancia: totalDistance.toString(),
+          DatabaseHelper.columnVelocidad: _speed.toString(),
+        };
+        final id = await dbHelper.insert(row);
+
+        lat = double.parse(location.latitude.toString());
+        lng = double.parse(location.longitude.toString());
+
+        accuracy = location.accuracy.toString();
+        altitude = location.altitude.toString();
+        bearing = location.bearing.toString();
+        _velocidad = _speed.toStringAsFixed(2);
+        _distancia = totalDistance.toStringAsFixed(2);
+        time = DateTime.fromMillisecondsSinceEpoch(location.time!.toInt())
+            .toString();
+
+        if (latInit != 0) {
+          _mapController.move(LatLng(lat, lng), 17.0);
+          points.add(LatLng(lat, lng));
+        }
+      });
+
+      // Comprovamos Que ya ha termninado la carrera
+      switch (_displaydistancia) {
+        case "2K":
+          {
+            if (double.parse(_distancia) >= 2.0) {
+              // _startStopButtonPressed();
+              // Fluttertoast.showToast(
+              //    msg: "Ha terminado tu recorrido.",
+              //    toastLength: Toast.LENGTH_LONG,
+              //    gravity: ToastGravity.TOP,
+              //    timeInSecForIosWeb: 1,
+              //    backgroundColor: Colors.red,
+              //    textColor: Colors.white,
+              //    fontSize: 26.0
+              // );
+            }
+          }
+          break;
+
+        case "5K":
+          {
+            if (double.parse(_distancia) >= 5.0) {
+              // _startStopButtonPressed();
+              // Fluttertoast.showToast(
+              //     msg: "Ha terminado tu recorrido.",
+              //     toastLength: Toast.LENGTH_LONG,
+              //     gravity: ToastGravity.TOP,
+              //     timeInSecForIosWeb: 1,
+              //     backgroundColor: Colors.red,
+              //     textColor: Colors.white,
+              //     fontSize: 26.0
+              // );
+            }
+          }
+          break;
+
+        case "10K":
+          {
+            if (double.parse(_distancia) >= 10.0) {
+              // _startStopButtonPressed();
+              // Fluttertoast.showToast(
+              //     msg: "Ha terminado tu recorrido.",
+              //     toastLength: Toast.LENGTH_LONG,
+              //     gravity: ToastGravity.TOP,
+              //     timeInSecForIosWeb: 1,
+              //     backgroundColor: Colors.red,
+              //     textColor: Colors.white,
+              //     fontSize: 26.0
+              // );
+            }
+          }
+          break;
+      }
+    });
+  }
+
+  _getInit() async {
+    sharedPreferences = await SharedPreferences.getInstance();
+
+    setState(() {
+      _displayname = sharedPreferences.getString('LS_USER_DISPLAY_NAME')!;
+      _displayemail = sharedPreferences.getString('LS_USER_MAIL')!;
+      _displaydistancia = sharedPreferences.getString('LS_DISTANCIA')!;
+      _displaydia = sharedPreferences.getString('LS_DIA')!;
+      _displaymarcacarrera = sharedPreferences.getString('LS_MARCA_CARRERA')!;
+      _displaytipocarrera = sharedPreferences.getString('LS_TIPO_CARRERA')!;
+      _displayiduser = sharedPreferences.getString('LS_USER_ID')!;
+      _displayavatar = sharedPreferences.getString('LS_AVATAR')!;
+
+      latInit = double.parse(sharedPreferences.getString('LS_LAT_INIT')!);
+      lngInit = double.parse(sharedPreferences.getString('LS_LNG_INIT')!);
+    });
   }
 
   _setMarcaTime() async {
@@ -104,23 +224,12 @@ class _MapPageState extends State<MapPage> {
     });
 
     if (response.statusCode == 200) {
-      var jsonResponse = convert.jsonDecode(response.body) as Map<String, dynamic>;
+      var jsonResponse =
+          convert.jsonDecode(response.body) as Map<String, dynamic>;
       setState(() {
-        storage.setItem('LS_MARCA_CARRERA', _stopwatchText);
+        sharedPreferences.setString('LS_MARCA_CARRERA', _stopwatchText);
       });
     } else {}
-  }
-
-  Future<void> _getPosicionActual() async {
-    var posActual = await Geolocator.getCurrentPosition();
-    setState(() {
-      lngInit = posActual.longitude;
-      latInit = posActual.latitude;
-
-      lng = posActual.longitude;
-      lat = posActual.latitude;
-      isLocation = true;
-    });
   }
 
   Widget _mapaHome() {
@@ -186,113 +295,6 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
-  Widget _panelHomeInfo() {
-    return Positioned(
-      top: 120.0,
-      left: 30.0,
-      right: 30.0,
-      child: Container(
-        child: Column(
-          children: [
-            StreamBuilder<Map<String, dynamic>?>(
-              stream: FlutterBackgroundService().onDataReceived,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return Center(
-                    child: Text(""),
-                  );
-                }
-
-                final data = snapshot.data!;
-
-                _velocidad = data["velocidad"] == 0
-                    ? "0.0"
-                    : data["velocidad"].toStringAsFixed(2);
-                _distancia = data["distancia"] == 0
-                    ? "0.0"
-                    : data["distancia"].toStringAsFixed(2);
-                lat = data["lat"] == 0 ? latInit : data["lat"];
-                lng = data["lng"] == 0 ? lngInit : data["lng"];
-
-                if (data["lat"] != 0) {
-                  _mapController.move(LatLng(data["lat"], data["lng"]), 17.0);
-                  // points.add(LatLng(data["lat"], data["lng"]));
-
-                  // points.clear();
-                  if (data["route"] != null) {
-                    data["route"].forEach((item) {
-                      points.add(LatLng(double.parse(item["latitud"]),
-                          double.parse(item["longitud"])));
-                    });
-                  } else {
-                    points.add(LatLng(data["lat"], data["lng"]));
-                  }
-                }
-
-                // Comprovamos Que ya ha termninado la carrera
-                switch (_displaydistancia) {
-                  case "2K":
-                    {
-                      if (double.parse(_distancia) >= 2.0) {
-                        _startStopButtonPressed();
-                        // Fluttertoast.showToast(
-                        //    msg: "Ha terminado tu recorrido.",
-                        //    toastLength: Toast.LENGTH_LONG,
-                        //    gravity: ToastGravity.TOP,
-                        //    timeInSecForIosWeb: 1,
-                        //    backgroundColor: Colors.red,
-                        //    textColor: Colors.white,
-                        //    fontSize: 26.0
-                        // );
-                      }
-                    }
-                    break;
-
-                  case "5K":
-                    {
-                      if (double.parse(_distancia) >= 5.0) {
-                        _startStopButtonPressed();
-                        // Fluttertoast.showToast(
-                        //     msg: "Ha terminado tu recorrido.",
-                        //     toastLength: Toast.LENGTH_LONG,
-                        //     gravity: ToastGravity.TOP,
-                        //     timeInSecForIosWeb: 1,
-                        //     backgroundColor: Colors.red,
-                        //     textColor: Colors.white,
-                        //     fontSize: 26.0
-                        // );
-                      }
-                    }
-                    break;
-
-                  case "10K":
-                    {
-                      if (double.parse(_distancia) >= 10.0) {
-                        _startStopButtonPressed();
-                        // Fluttertoast.showToast(
-                        //     msg: "Ha terminado tu recorrido.",
-                        //     toastLength: Toast.LENGTH_LONG,
-                        //     gravity: ToastGravity.TOP,
-                        //     timeInSecForIosWeb: 1,
-                        //     backgroundColor: Colors.red,
-                        //     textColor: Colors.white,
-                        //     fontSize: 26.0
-                        // );
-                      }
-                    }
-                    break;
-                }
-
-                return Text(""); // data["vFinal"].toString()
-              },
-            ),
-            // Text("Velocidad: ${_velocidad.toString()} | Lat: ${lat.toString()}"),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _itemCard(IconData icono, String texto1, String texto2) {
     return Expanded(
       child: Container(
@@ -338,7 +340,7 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
-  Widget _Cronometro() {
+  Widget _cronometro() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -368,8 +370,8 @@ class _MapPageState extends State<MapPage> {
 
                 AlertDialog alert1 = AlertDialog(
                   title: Text("¿Estás seguro de que quieres pararlo?"),
-                  content:
-                  Text("Si paras el recorrido tendrás que empezarlo de nuevo."),
+                  content: Text(
+                      "Si paras el recorrido tendrás que empezarlo de nuevo."),
                   actions: [
                     cancelButton1,
                     continueButton1,
@@ -383,10 +385,9 @@ class _MapPageState extends State<MapPage> {
                       return alert1;
                     },
                   );
-                }else{
+                } else {
                   Navigator.pop(context, true);
                 }
-
               },
               child: Padding(
                 padding: EdgeInsets.all(8.0),
@@ -426,14 +427,7 @@ class _MapPageState extends State<MapPage> {
               borderRadius: BorderRadius.all(Radius.circular(10)),
             ),
             child: InkWell(
-              onTap: () async {
-                var posActual = await Geolocator.getCurrentPosition();
-                isLocation = false;
-                _mapController.move(LatLng(latInit, lngInit), 17.0);
-                setState(() {
-                  isLocation = true;
-                });
-              },
+              onTap: () async {},
               child: Padding(
                 padding: EdgeInsets.all(8.0),
                 child: Icon(
@@ -452,16 +446,15 @@ class _MapPageState extends State<MapPage> {
   Widget _btnIniciar() {
     return MaterialButton(
       onPressed: () {
-        if(!_isButtonDisabled){
+        if (!_isButtonDisabled) {
           setState(() {
             _isPulsacion = false;
           });
-        }else{
+        } else {
           setState(() {
             _isPulsacion = true;
           });
         }
-
       },
       color: Colors.purple,
       textColor: Colors.white,
@@ -825,18 +818,19 @@ class _MapPageState extends State<MapPage> {
             top: 20.0,
             left: 0.0,
             right: 0.0,
-            child: _Cronometro(),
+            child: _cronometro(),
           ),
-          _panelHomeInfo(),
           _panelScrool(context),
-          _isPulsacion ? TimerCountDownWidget(
-            onTimerFinish: () {
-              _startStopButtonPressed();
-              setState(() {
-                _isPulsacion = false;
-              });
-            },
-          ) : Text("")
+          _isPulsacion
+              ? TimerCountDownWidget(
+                  onTimerFinish: () {
+                    _startStopButtonPressed();
+                    setState(() {
+                      _isPulsacion = false;
+                    });
+                  },
+                )
+              : Text("")
         ],
       ),
     );
@@ -891,18 +885,17 @@ class _MapPageState extends State<MapPage> {
   void _startStopButtonPressed() {
     setState(() {
       if (_stopWatch.isRunning) {
+        BackgroundLocation.stopLocationService();
         _isStart = true;
         _isButtonDisabled = true;
         _stopWatch.stop();
-        FlutterBackgroundService().sendData(
-          {"action": "stopService"},
-        );
+        print(1);
       } else {
+        _initServicio();
         _isStart = false;
         _stopWatch.start();
         _startTimeout();
-        // Inicializo el servicio en segundo plano
-        FlutterBackgroundService.initialize(onStart);
+        print(2);
       }
     });
   }
@@ -912,6 +905,7 @@ class _MapPageState extends State<MapPage> {
       _startStopButtonPressed();
     }
     setState(() {
+      sharedPreferences.setString('LS_MARCA_CARRERA', _stopwatchText);
       _stopWatch.reset();
       _setStopwatchText();
     });
@@ -924,85 +918,4 @@ class _MapPageState extends State<MapPage> {
         ':' +
         (_stopWatch.elapsed.inSeconds % 60).toString().padLeft(2, '0');
   }
-}
-
-Future<void> onStart() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  final service = FlutterBackgroundService();
-  final dbHelper = DatabaseHelper.instance;
-  final fns = FnsHellper.instance;
-
-  double lngS = 0, latS = 0, distanciaS = 0, totalDistance = 0, velocidadS = 0;
-  var allRows = null;
-
-  service.onDataReceived.listen((event) {
-    if (event!["action"] == "setAsForeground") {
-      service.setForegroundMode(true);
-      return;
-    }
-
-    if (event["action"] == "setAsBackground") {
-      service.setForegroundMode(false);
-    }
-
-    if (event["action"] == "stopService") {
-      service.stopBackgroundService();
-    }
-  });
-
-  // bring to foreground
-  service.setForegroundMode(true);
-
-  bool isLocationEnabled = await Geolocator.isLocationServiceEnabled();
-
-  Geolocator.getPositionStream().listen((Position position) async {
-    double _speed = position.speed < 0.5
-        ? 0
-        : position.speed * 3.6; //Converting position speed from m/s to km/hr
-
-    // if (_speed != 0) {
-      final allRows = await dbHelper.queryAllRows('trackers');
-
-      double totalDistance = 0;
-      for (int i = 0; i < allRows.length - 1; i++) {
-        totalDistance += fns.coordinateDistance(
-          double.parse(allRows[i]["latitud"]),
-          double.parse(allRows[i]["longitud"]),
-          double.parse(allRows[i + 1]["latitud"]),
-          double.parse(allRows[i + 1]["longitud"]),
-        );
-      }
-
-      Map<String, dynamic> row = {
-        DatabaseHelper.columnLatitud: position.latitude.toString(),
-        DatabaseHelper.columnLongitud: position.longitude.toString(),
-        DatabaseHelper.columnDistancia: totalDistance.toString(),
-        DatabaseHelper.columnVelocidad: _speed.toString(),
-      };
-      final id = await dbHelper.insert(row);
-
-      distanciaS = totalDistance;
-      lngS = position.longitude;
-      latS = position.latitude;
-      velocidadS = _speed; // position.speed;
-    // }
-
-    service.setNotificationInfo(
-      title: "Pucela Runnning",
-      content:
-          "Duración: ${DateTime.now()} \t Lat: ${position.latitude} \t Lng: ${position.longitude} \t Distancia: $distanciaS  \t Velocidad: $velocidadS",
-    );
-
-    service.sendData(
-      {
-        "current_date": DateTime.now().toIso8601String(),
-        "lat": latS,
-        "lng": lngS,
-        "velocidad": velocidadS,
-        "distancia": distanciaS,
-        "vFinal": position.speed,
-        "route": allRows
-      },
-    );
-  });
 }

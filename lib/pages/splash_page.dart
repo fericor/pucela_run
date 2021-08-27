@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert' as convert;
 import 'package:http/http.dart' as http;
-import 'package:localstorage/localstorage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:fullscreen/fullscreen.dart';
 import 'home_page.dart';
@@ -16,7 +16,7 @@ class splashPage extends StatefulWidget {
 class _splashPageState extends State<splashPage> {
   late bool _isLogin = false;
   late bool _passwordVisible = false;
-  final LocalStorage storage = new LocalStorage('pucela_app');
+  late SharedPreferences sharedPreferences;
   final TextEditingController _usuario = TextEditingController();
   final TextEditingController _contrasena = TextEditingController();
 
@@ -28,40 +28,46 @@ class _splashPageState extends State<splashPage> {
   }
 
   Future<void> _isServiceLogin() async {
-
     setState(() {
       _isLogin = true;
     });
 
-    await storage.ready;
+    sharedPreferences = await SharedPreferences.getInstance();
 
     try {
-      if (storage.getItem('LS_USER_PASS') != null ||
-          storage.getItem('LS_USER_PASS') != "") {
+      if (sharedPreferences.getString('LS_USER_PASS') != null ||
+          sharedPreferences.getString('LS_USER_PASS') != "") {
         var url = Uri.https('pucelarun.es', '/wp-json/jwt-auth/v1/token', {
-          'username': storage.getItem('LS_USER_USER'),
-          'password': storage.getItem('LS_USER_PASS')
+          'username': sharedPreferences.getString('LS_USER_USER'),
+          'password': sharedPreferences.getString('LS_USER_PASS')
         });
 
         var response = await http.post(url);
         if (response.statusCode == 200) {
           var jsonResponse =
               convert.jsonDecode(response.body) as Map<String, dynamic>;
+          String? userInit = sharedPreferences.getString("LS_USER_USER");
+          String? passInit = sharedPreferences.getString("LS_USER_PASS");
 
-          storage.setItem('LS_TOKEN', jsonResponse['token']);
-          storage.setItem('LS_USER_MAIL', jsonResponse['user_email']);
-          storage.setItem('LS_USER_NICENAME', jsonResponse['user_nicename']);
-          storage.setItem(
+          sharedPreferences.setString('LS_TOKEN', jsonResponse['token']);
+          sharedPreferences.setString(
+              'LS_USER_MAIL', jsonResponse['user_email']);
+          sharedPreferences.setString(
+              'LS_USER_NICENAME', jsonResponse['user_nicename']);
+          sharedPreferences.setString(
               'LS_USER_DISPLAY_NAME', jsonResponse['user_display_name']);
-          storage.setItem('LS_AVATAR', jsonResponse['avatar']);
-          storage.setItem('LS_DISTANCIA', jsonResponse['distancia']);
-          storage.setItem('LS_DIA', jsonResponse['dia']);
-          storage.setItem('LS_MARCA_CARRERA', jsonResponse['marca_carrera']);
-          storage.setItem('LS_TIPO_CARRERA', jsonResponse['tipo_carrera']);
-          storage.setItem('LS_USER_ID', jsonResponse['user_id'].toString());
+          sharedPreferences.setString('LS_AVATAR', jsonResponse['avatar']);
+          sharedPreferences.setString(
+              'LS_DISTANCIA', jsonResponse['distancia']);
+          sharedPreferences.setString('LS_DIA', jsonResponse['dia']);
+          // sharedPreferences.setString('LS_MARCA_CARRERA', jsonResponse['marca_carrera']);
+          sharedPreferences.setString(
+              'LS_TIPO_CARRERA', jsonResponse['tipo_carrera']);
+          sharedPreferences.setString(
+              'LS_USER_ID', jsonResponse['user_id'].toString());
 
-          storage.setItem('LS_USER_USER', storage.getItem('LS_USER_USER'));
-          storage.setItem('LS_USER_PASS', storage.getItem('LS_USER_PASS'));
+          sharedPreferences.setString('LS_USER_USER', userInit!);
+          sharedPreferences.setString('LS_USER_PASS', passInit!);
 
           Navigator.push(
             context,
@@ -81,6 +87,9 @@ class _splashPageState extends State<splashPage> {
   }
 
   void getLogin(String user, pass, BuildContext context) async {
+
+    sharedPreferences = await SharedPreferences.getInstance();
+
     var url = Uri.https('pucelarun.es', '/wp-json/jwt-auth/v1/token',
         {'username': user, 'password': pass});
 
@@ -89,20 +98,27 @@ class _splashPageState extends State<splashPage> {
       var jsonResponse =
           convert.jsonDecode(response.body) as Map<String, dynamic>;
 
-      storage.setItem('LS_TOKEN', jsonResponse['token']);
-      storage.setItem('LS_USER_MAIL', jsonResponse['user_email']);
-      storage.setItem('LS_USER_NICENAME', jsonResponse['user_nicename']);
-      storage.setItem(
-          'LS_USER_DISPLAY_NAME', jsonResponse['user_display_name']);
-      storage.setItem('LS_AVATAR', jsonResponse['avatar']);
-      storage.setItem('LS_DISTANCIA', jsonResponse['distancia']);
-      storage.setItem('LS_DIA', jsonResponse['dia']);
-      storage.setItem('LS_MARCA_CARRERA', jsonResponse['marca_carrera']);
-      storage.setItem('LS_TIPO_CARRERA', jsonResponse['tipo_carrera']);
-      storage.setItem('LS_USER_ID', jsonResponse['user_id'].toString());
+      sharedPreferences.setString('LS_TOKEN', jsonResponse['token'].toString());
+      sharedPreferences.setString(
+          'LS_USER_MAIL', jsonResponse['user_email'].toString());
+      sharedPreferences.setString(
+          'LS_USER_NICENAME', jsonResponse['user_nicename'].toString());
+      sharedPreferences.setString(
+          'LS_USER_DISPLAY_NAME', jsonResponse['user_display_name'].toString());
+      sharedPreferences.setString(
+          'LS_AVATAR', jsonResponse['avatar'].toString());
+      sharedPreferences.setString(
+          'LS_DISTANCIA', jsonResponse['distancia'].toString());
+      sharedPreferences.setString('LS_DIA', jsonResponse['dia'].toString());
+      sharedPreferences.setString(
+          'LS_MARCA_CARRERA', jsonResponse['marca_carrera']);
+      sharedPreferences.setString(
+          'LS_TIPO_CARRERA', jsonResponse['tipo_carrera']);
+      sharedPreferences.setString(
+          'LS_USER_ID', jsonResponse['user_id'].toString());
 
-      storage.setItem('LS_USER_USER', user);
-      storage.setItem('LS_USER_PASS', pass);
+      sharedPreferences.setString('LS_USER_USER', user);
+      sharedPreferences.setString('LS_USER_PASS', pass);
 
       Navigator.push(
         context,

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:localstorage/localstorage.dart';
+import 'package:pucela_run/pages/test2.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fullscreen/fullscreen.dart';
 import 'package:pucela_run/pages/map_page.dart';
+import 'package:background_location/background_location.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pucela_run/pages/splash_page.dart';
 
@@ -14,7 +16,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   // Variables
-  final LocalStorage storage = new LocalStorage('pucela_app');
+  late SharedPreferences sharedPreferences;
 
   // VARIABLES GLOBALES
   String _displayname = "PUCELA RUN";
@@ -30,6 +32,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     _getInit();
+    _initServicio();
     // TODO: implement initState
     super.initState();
   }
@@ -42,18 +45,38 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
+    BackgroundLocation.stopLocationService();
     super.dispose();
   }
 
-  _getInit() {
-    _displayname = storage.getItem('LS_USER_DISPLAY_NAME');
-    _displayemail = storage.getItem('LS_USER_MAIL');
-    _displaydistancia = storage.getItem('LS_DISTANCIA');
-    _displaydia = storage.getItem('LS_DIA');
-    _displaymarcacarrera = storage.getItem('LS_MARCA_CARRERA');
-    _displaytipocarrera = storage.getItem('LS_TIPO_CARRERA');
-    _displayiduser = storage.getItem('LS_USER_ID');
-    _displayavatar = storage.getItem('LS_AVATAR');
+  _getInit() async {
+    sharedPreferences = await SharedPreferences.getInstance();
+
+    setState(() {
+      _displayname = sharedPreferences.getString('LS_USER_DISPLAY_NAME')!;
+      _displayemail = sharedPreferences.getString('LS_USER_MAIL')!;
+      _displaydistancia = sharedPreferences.getString('LS_DISTANCIA')!;
+      _displaydia = sharedPreferences.getString('LS_DIA')!;
+      _displaymarcacarrera = sharedPreferences.getString('LS_MARCA_CARRERA')!;
+      _displaytipocarrera = sharedPreferences.getString('LS_TIPO_CARRERA')!;
+      _displayiduser = sharedPreferences.getString('LS_USER_ID')!;
+      _displayavatar = sharedPreferences.getString('LS_AVATAR')!;
+    });
+  }
+
+  _initServicio() async {
+    await BackgroundLocation.setAndroidNotification(
+      title: 'Pucela Run',
+      message: "Duración: Tracker de Geolocalizacion.",
+      icon: '@mipmap/ic_launcher',
+    );
+
+    // await BackgroundLocation.setAndroidConfiguration(3000);
+    await BackgroundLocation.startLocationService(distanceFilter: 10);
+    BackgroundLocation.getLocationUpdates((location) {
+      sharedPreferences.setString('LS_LAT_INIT', location.latitude.toString());
+      sharedPreferences.setString('LS_LNG_INIT', location.longitude.toString());
+    });
   }
 
   @override
@@ -80,7 +103,10 @@ class _HomePageState extends State<HomePage> {
                   );
 
                   if (reLoadPage) {
-                    setState(() {_displaymarcacarrera = storage.getItem('LS_MARCA_CARRERA');});
+                    setState(() {
+                      _displaymarcacarrera =
+                          sharedPreferences.getString('LS_MARCA_CARRERA')!;
+                    });
                   }
                 }),
           ),
@@ -213,6 +239,14 @@ class _HomePageState extends State<HomePage> {
       itemBuilder: (context) {
         return [
           PopupMenuItem(
+            value: 'test2',
+            child: Text('BBBBBB'),
+          ),
+          PopupMenuItem(
+            value: 'test',
+            child: Text('Service'),
+          ),
+          PopupMenuItem(
             value: 'mapById',
             child: Text('Test'),
           ),
@@ -228,6 +262,12 @@ class _HomePageState extends State<HomePage> {
             context,
             MaterialPageRoute(builder: (context) => mapByPage()),
           );
+        } else if (value == "test2") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => MyApp2()),
+          );
+        } else if (value == "test") {
         } else {
           _Salir();
         }
@@ -469,8 +509,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _Salir() {
-    storage.clear();
+  Future<void> _Salir() async {
+    await sharedPreferences.clear();
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => splashPage()),
