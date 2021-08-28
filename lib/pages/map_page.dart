@@ -67,8 +67,8 @@ class _MapPageState extends State<MapPage> {
 
   @override
   void initState() {
+    _initServicio();
     _getInit();
-    // _initServicio();
     _deletePointsAll();
     // TODO: implement initState
     super.initState();
@@ -89,8 +89,8 @@ class _MapPageState extends State<MapPage> {
       icon: '@mipmap/ic_launcher',
     );
 
-    // await BackgroundLocation.setAndroidConfiguration(3000);
-    await BackgroundLocation.startLocationService(distanceFilter: 10);
+    await BackgroundLocation.setAndroidConfiguration(1000);
+    await BackgroundLocation.startLocationService(distanceFilter: 5);
     BackgroundLocation.getLocationUpdates((location) {
       setState(() async {
         isLocation = true;
@@ -122,6 +122,9 @@ class _MapPageState extends State<MapPage> {
 
         lat = double.parse(location.latitude.toString());
         lng = double.parse(location.longitude.toString());
+
+        latInit = double.parse(location.latitude.toString());
+        lngInit = double.parse(location.longitude.toString());
 
         accuracy = location.accuracy.toString();
         altitude = location.altitude.toString();
@@ -206,8 +209,8 @@ class _MapPageState extends State<MapPage> {
       _displayiduser = sharedPreferences.getString('LS_USER_ID')!;
       _displayavatar = sharedPreferences.getString('LS_AVATAR')!;
 
-      latInit = double.parse(sharedPreferences.getString('LS_LAT_INIT')!);
-      lngInit = double.parse(sharedPreferences.getString('LS_LNG_INIT')!);
+      // latInit = double.parse(sharedPreferences.getString('LS_LAT_INIT')!);
+      // lngInit = double.parse(sharedPreferences.getString('LS_LNG_INIT')!);
     });
   }
 
@@ -486,13 +489,13 @@ class _MapPageState extends State<MapPage> {
   Widget _btnStop() {
     return MaterialButton(
       onPressed: () {
-        Widget cancelButton = FlatButton(
+        Widget cancelButton2 = FlatButton(
           child: Text("Cancelar"),
           onPressed: () {
             Navigator.of(context).pop();
           },
         );
-        Widget continueButton = FlatButton(
+        Widget continueButton2 = FlatButton(
           child: Text("Continuar"),
           onPressed: () {
             !_isButtonDisabled ? _resetButtonPressed() : null;
@@ -506,8 +509,8 @@ class _MapPageState extends State<MapPage> {
           content:
               Text("Si paras el recorrido tendrás que empezarlo de nuevo."),
           actions: [
-            cancelButton,
-            continueButton,
+            cancelButton2,
+            continueButton2,
           ],
         );
 

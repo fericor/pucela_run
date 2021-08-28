@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:pucela_run/pages/test2.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fullscreen/fullscreen.dart';
 import 'package:pucela_run/pages/map_page.dart';
-import 'package:background_location/background_location.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pucela_run/pages/splash_page.dart';
 
@@ -32,7 +30,6 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     _getInit();
-    _initServicio();
     // TODO: implement initState
     super.initState();
   }
@@ -45,7 +42,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    BackgroundLocation.stopLocationService();
     super.dispose();
   }
 
@@ -61,21 +57,6 @@ class _HomePageState extends State<HomePage> {
       _displaytipocarrera = sharedPreferences.getString('LS_TIPO_CARRERA')!;
       _displayiduser = sharedPreferences.getString('LS_USER_ID')!;
       _displayavatar = sharedPreferences.getString('LS_AVATAR')!;
-    });
-  }
-
-  _initServicio() async {
-    await BackgroundLocation.setAndroidNotification(
-      title: 'Pucela Run',
-      message: "Duración: Tracker de Geolocalizacion.",
-      icon: '@mipmap/ic_launcher',
-    );
-
-    // await BackgroundLocation.setAndroidConfiguration(3000);
-    await BackgroundLocation.startLocationService(distanceFilter: 10);
-    BackgroundLocation.getLocationUpdates((location) {
-      sharedPreferences.setString('LS_LAT_INIT', location.latitude.toString());
-      sharedPreferences.setString('LS_LNG_INIT', location.longitude.toString());
     });
   }
 
@@ -263,10 +244,6 @@ class _HomePageState extends State<HomePage> {
             MaterialPageRoute(builder: (context) => mapByPage()),
           );
         } else if (value == "test2") {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => MyApp2()),
-          );
         } else if (value == "test") {
         } else {
           _Salir();
