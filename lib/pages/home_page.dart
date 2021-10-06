@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:fullscreen/fullscreen.dart';
 import 'package:pucela_run/pages/map_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pucela_run/pages/splash_page.dart';
+import 'package:location/location.dart';
 
 import 'mapby_page.dart';
 
@@ -15,6 +15,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   // Variables
   late SharedPreferences sharedPreferences;
+  late LocationData _currentPosition;
+  Location location = Location();
 
   // VARIABLES GLOBALES
   String _displayname = "PUCELA RUN";
@@ -29,6 +31,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
+    _getLoc();
     _getInit();
     // TODO: implement initState
     super.initState();
@@ -43,6 +46,36 @@ class _HomePageState extends State<HomePage> {
   @override
   void dispose() {
     super.dispose();
+  }
+
+  _getLoc() async {
+    sharedPreferences = await SharedPreferences.getInstance();
+
+    bool _serviceEnabled;
+    PermissionStatus _permissionGranted;
+
+    _serviceEnabled = await location.serviceEnabled();
+    if (!_serviceEnabled) {
+      _serviceEnabled = await location.requestService();
+      if (!_serviceEnabled) {
+        return;
+      }
+    }
+
+    _permissionGranted = await location.hasPermission();
+    if (_permissionGranted == PermissionStatus.denied) {
+      _permissionGranted = await location.requestPermission();
+      if (_permissionGranted != PermissionStatus.granted) {
+        return;
+      }
+    }
+
+    _currentPosition = await location.getLocation();
+
+    sharedPreferences.setString(
+        'LS_LAT_INIT', _currentPosition.latitude.toString());
+    sharedPreferences.setString(
+        'LS_LNG_INIT', _currentPosition.longitude.toString());
   }
 
   _getInit() async {
@@ -62,7 +95,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    FullScreen.enterFullScreen(FullScreenMode.EMERSIVE_STICKY);
+    // FullScreen.enterFullScreen(FullScreenMode.EMERSIVE_STICKY);
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: Padding(
@@ -84,6 +117,7 @@ class _HomePageState extends State<HomePage> {
                   );
 
                   if (reLoadPage) {
+                    sharedPreferences = await SharedPreferences.getInstance();
                     setState(() {
                       _displaymarcacarrera =
                           sharedPreferences.getString('LS_MARCA_CARRERA')!;
@@ -125,7 +159,7 @@ class _HomePageState extends State<HomePage> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 20.0),
+                SizedBox(height: 90.0),
                 _headerText(),
                 SizedBox(height: 20.0),
                 Container(

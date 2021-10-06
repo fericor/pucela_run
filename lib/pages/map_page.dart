@@ -11,7 +11,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:background_location/background_location.dart';
 import 'package:pucela_run/widgets/pulsacion_page.dart';
-import 'package:fullscreen/fullscreen.dart';
 
 class MapPage extends StatefulWidget {
   @override
@@ -67,8 +66,8 @@ class _MapPageState extends State<MapPage> {
 
   @override
   void initState() {
-    _initServicio();
     _getInit();
+    _initServicio();
     _deletePointsAll();
     // TODO: implement initState
     super.initState();
@@ -81,6 +80,10 @@ class _MapPageState extends State<MapPage> {
     super.dispose();
   }
 
+  _getCurrentLocation() {
+    print("HOLA");
+  }
+
   _initServicio() async {
     await BackgroundLocation.setAndroidNotification(
       title: 'Pucela Run',
@@ -90,7 +93,7 @@ class _MapPageState extends State<MapPage> {
     );
 
     await BackgroundLocation.setAndroidConfiguration(1000);
-    await BackgroundLocation.startLocationService(distanceFilter: 5);
+    await BackgroundLocation.startLocationService(distanceFilter: 10);
     BackgroundLocation.getLocationUpdates((location) {
       setState(() async {
         isLocation = true;
@@ -123,8 +126,8 @@ class _MapPageState extends State<MapPage> {
         lat = double.parse(location.latitude.toString());
         lng = double.parse(location.longitude.toString());
 
-        latInit = double.parse(location.latitude.toString());
-        lngInit = double.parse(location.longitude.toString());
+        // latInit = double.parse(location.latitude.toString());
+        // lngInit = double.parse(location.longitude.toString());
 
         accuracy = location.accuracy.toString();
         altitude = location.altitude.toString();
@@ -209,30 +212,43 @@ class _MapPageState extends State<MapPage> {
       _displayiduser = sharedPreferences.getString('LS_USER_ID')!;
       _displayavatar = sharedPreferences.getString('LS_AVATAR')!;
 
-      // latInit = double.parse(sharedPreferences.getString('LS_LAT_INIT')!);
-      // lngInit = double.parse(sharedPreferences.getString('LS_LNG_INIT')!);
+      latInit = double.parse(sharedPreferences.getString('LS_LAT_INIT')!);
+      lngInit = double.parse(sharedPreferences.getString('LS_LNG_INIT')!);
+
+      isLocation = true;
     });
+
+    print("HOLA_: ");
+    print(sharedPreferences.getString('LS_LAT_INIT'));
   }
 
-  _setMarcaTime() async {
+  _setMarcaTime(String tiempoText) async {
     var url = Uri.parse('https://pucelarun.es/wp-admin/admin-ajax.php');
     var response = await http.post(url, body: {
       'action': 'upload_time',
       'id': _displayiduser,
-      'timeStamp': _stopwatchText, // _stopwatchText, // DateTime.now(),
+      'timeStamp': tiempoText, // _stopwatchText, // DateTime.now(),
       'completed': _isTerminoRecorrido.toString(),
       'distance': _distancia.toString(),
       'distanceRun': '2000',
       'coordinates': points.toString()
     });
+    var jsonResponse =
+        convert.jsonDecode(response.body) as Map<String, dynamic>;
 
     if (response.statusCode == 200) {
-      var jsonResponse =
-          convert.jsonDecode(response.body) as Map<String, dynamic>;
       setState(() {
         sharedPreferences.setString('LS_MARCA_CARRERA', _stopwatchText);
       });
     } else {}
+
+    print(jsonResponse);
+    print("HOLA");
+    print(_displayiduser);
+    print(tiempoText);
+    print(_isTerminoRecorrido.toString());
+    print(_distancia.toString());
+    print(points.toString());
   }
 
   Widget _mapaHome() {
@@ -367,7 +383,7 @@ class _MapPageState extends State<MapPage> {
                   onPressed: () {
                     !_isButtonDisabled ? _resetButtonPressed() : null;
                     Navigator.of(context).pop();
-                    Navigator.pop(context);
+                    Navigator.pop(context, true);
                   },
                 );
 
@@ -430,7 +446,9 @@ class _MapPageState extends State<MapPage> {
               borderRadius: BorderRadius.all(Radius.circular(10)),
             ),
             child: InkWell(
-              onTap: () async {},
+              onTap: () {
+                _getCurrentLocation();
+              },
               child: Padding(
                 padding: EdgeInsets.all(8.0),
                 child: Icon(
@@ -500,7 +518,7 @@ class _MapPageState extends State<MapPage> {
           onPressed: () {
             !_isButtonDisabled ? _resetButtonPressed() : null;
             Navigator.of(context).pop();
-            _setMarcaTime();
+            // _setMarcaTime();
           },
         );
 
@@ -571,7 +589,7 @@ class _MapPageState extends State<MapPage> {
           child: Text("Continuar"),
           onPressed: () {
             if (_isButtonDisabled) {
-              _setMarcaTime();
+              _setMarcaTime(_stopwatchText);
               _resetButtonPressed();
 
               setState(() {
@@ -594,7 +612,7 @@ class _MapPageState extends State<MapPage> {
           child: Text("Continuar"),
           onPressed: () {
             if (_isButtonDisabled) {
-              _setMarcaTime();
+              // _setMarcaTime();
               _resetButtonPressed();
 
               setState(() {
@@ -714,29 +732,30 @@ class _MapPageState extends State<MapPage> {
                     padding: const EdgeInsets.only(left: 8.0, right: 8.0),
                     child: IconButton(
                       icon: Icon(
-                        _isHidenPanel
-                            ? Icons.arrow_circle_down_rounded
-                            : Icons.arrow_circle_up_rounded,
+                        Icons.move_to_inbox,
+                        // _isHidenPanel
+                        //     ? Icons.arrow_circle_down_rounded
+                        //     : Icons.arrow_circle_up_rounded,
                         size: 30.0,
                       ),
                       onPressed: () {
-                        if (_isHidenPanel) {
-                          scrollController.jumpTo(-190);
-                          scrollController.animateTo(20,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.bounceIn);
-                          setState(() {
-                            _isHidenPanel = false;
-                          });
-                        } else {
-                          scrollController.jumpTo(0);
-                          scrollController.animateTo(20,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.bounceOut);
-                          setState(() {
-                            _isHidenPanel = true;
-                          });
-                        }
+                        // if (_isHidenPanel) {
+                        //   scrollController.jumpTo(-190);
+                        //   scrollController.animateTo(20,
+                        //       duration: const Duration(milliseconds: 300),
+                        //       curve: Curves.bounceIn);
+                        //   setState(() {
+                        //     _isHidenPanel = false;
+                        //   });
+                        // } else {
+                        //   scrollController.jumpTo(0);
+                        //   scrollController.animateTo(20,
+                        //       duration: const Duration(milliseconds: 300),
+                        //       curve: Curves.bounceOut);
+                        //   setState(() {
+                        //     _isHidenPanel = true;
+                        //   });
+                        // }
                       },
                     ),
                   ),
@@ -812,13 +831,13 @@ class _MapPageState extends State<MapPage> {
 
   @override
   Widget build(BuildContext context) {
-    FullScreen.enterFullScreen(FullScreenMode.EMERSIVE_STICKY);
+    // FullScreen.enterFullScreen(FullScreenMode.EMERSIVE_STICKY);
     return Scaffold(
       body: Stack(
         children: [
           _mapaHome(),
           Positioned(
-            top: 20.0,
+            top: 60.0,
             left: 0.0,
             right: 0.0,
             child: _cronometro(),

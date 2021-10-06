@@ -3,7 +3,6 @@ import 'dart:convert' as convert;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
-import 'package:fullscreen/fullscreen.dart';
 import 'home_page.dart';
 
 class splashPage extends StatefulWidget {
@@ -87,7 +86,6 @@ class _splashPageState extends State<splashPage> {
   }
 
   void getLogin(String user, pass, BuildContext context) async {
-
     sharedPreferences = await SharedPreferences.getInstance();
 
     var url = Uri.https('pucelarun.es', '/wp-json/jwt-auth/v1/token',
@@ -125,12 +123,11 @@ class _splashPageState extends State<splashPage> {
         MaterialPageRoute(builder: (context) => HomePage()),
       );
     } else {
+      setState(() {
+        _isLogin = false;
+      });
       _showAlertDialog(context);
     }
-
-    setState(() {
-      _isLogin = false;
-    });
   }
 
   Widget _btnsplash(BuildContext context) {
@@ -148,10 +145,10 @@ class _splashPageState extends State<splashPage> {
         child: Container(
           decoration: BoxDecoration(
             color: Colors.purple,
-            borderRadius: BorderRadius.all(Radius.circular(15.0)),
+            borderRadius: BorderRadius.all(Radius.circular(30.0)),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(10.0),
+            padding: const EdgeInsets.all(15.0),
             child: Center(
               child: Text(
                 "Iniciar",
@@ -208,10 +205,10 @@ class _splashPageState extends State<splashPage> {
 
   Widget _panelLogin() {
     return Padding(
-      padding: const EdgeInsets.all(20.0),
+      padding: const EdgeInsets.all(40.0),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Colors.black.withOpacity(0.2),
           borderRadius: BorderRadius.circular(15.0),
         ),
         child: Padding(
@@ -221,12 +218,16 @@ class _splashPageState extends State<splashPage> {
               Padding(
                 //padding: const EdgeInsets.only(left:15.0,right: 15.0,top:0,bottom: 0),
                 padding: EdgeInsets.symmetric(horizontal: 15),
+
                 child: TextField(
                   controller: _usuario,
                   decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Email',
-                      hintText: 'Ingrese su mail abc@gmail.com'),
+                      fillColor: Colors.white,
+                      focusColor: Colors.white,
+                      filled: true,
+                      // border: OutlineInputBorder(),
+                      // labelText: 'Email',
+                      hintText: 'example@mail.com'),
                 ),
               ),
               Padding(
@@ -238,11 +239,12 @@ class _splashPageState extends State<splashPage> {
                   obscureText:
                       !_passwordVisible, //This will obscure text dynamically
                   decoration: InputDecoration(
-                      focusColor: Colors.purple,
                       fillColor: Colors.white,
-                      hintStyle: TextStyle(color: Colors.purple),
-                      border: OutlineInputBorder(),
-                      labelText: 'Password',
+                      focusColor: Colors.white,
+                      filled: true,
+                      // hintStyle: TextStyle(color: Colors.purple),
+                      // border: OutlineInputBorder(),
+                      // labelText: 'Password',
                       suffixIcon: IconButton(
                         icon: Icon(
                           // Based on passwordVisible state choose the icon
@@ -258,7 +260,7 @@ class _splashPageState extends State<splashPage> {
                           });
                         },
                       ),
-                      hintText: 'Ingrese su contraseña'),
+                      hintText: 'Contraseña'),
                 ),
               ),
 
@@ -324,7 +326,7 @@ class _splashPageState extends State<splashPage> {
 
   @override
   Widget build(BuildContext context) {
-    FullScreen.enterFullScreen(FullScreenMode.EMERSIVE_STICKY);
+    // FullScreen.enterFullScreen(FullScreenMode.EMERSIVE_STICKY);
     return Scaffold(
       body: !_isLogin
           ? Stack(
